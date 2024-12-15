@@ -1,4 +1,3 @@
-
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
@@ -94,9 +93,8 @@ if __name__ == "__main__":
     """
 
     summary_prompt_template = PromptTemplate(
-        input_variables=["information"]
-        ,template=summary_template
-        )
+        input_variables=["information"], template=summary_template
+    )
 
     llm = ChatOpenAI(temperature=0, model="gpt-4o-mini")
 
@@ -105,9 +103,3 @@ if __name__ == "__main__":
     res = chain.invoke(input={"information": information})
 
     print(res)
-    
-    
-
-
-
-
