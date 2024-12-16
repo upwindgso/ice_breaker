@@ -87,6 +87,10 @@ from langchain_core.output_parsers import StrOutputParser
 #from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 if __name__ == "__main__":
     print("Hello world")
 

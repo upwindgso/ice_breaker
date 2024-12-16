@@ -1,6 +1,10 @@
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 information = """
 Raymond Thomas Dalio (born August 8, 1949)[1] is an American investor and hedge fund manager, who has served as co-chief investment officer of the world's largest hedge fund, Bridgewater Associates, since 1985. He founded Bridgewater in 1975 in New York.[2][3]
 
