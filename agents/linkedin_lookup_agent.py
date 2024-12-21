@@ -33,6 +33,7 @@ def lookup(name: str) -> str:
                     Your answer should contain only a valid linkedin profile url containing 'linkedin.com/in/'.
                     Because you are searching for linkedin profiles, you will send to append your initial searches with the domain 'site:linkedin.com/in/' to help limit relevant results.
                     You will never repeat the same google query because it is wasteful.
+                    You make use of the rerank_score information to help sort relevance.
     """
 
     prompt_template = PromptTemplate(
@@ -45,7 +46,7 @@ def lookup(name: str) -> str:
             name="Crawl Google for linkedin profile page",
             #func=get_profile_url_tavily,
             func=get_profile_url_searxng,
-            description="useful for when you need to get the linkein page URL"
+            description="useful for when you need to get the linkein page URL. The reranking_score gives an expert opinion on relevance of the search result."
         )
         ,HumanInputRun(
         description="Useful when you need to ask a human for help or verification. The input should be a question for the human including what you know and where you are stuck. You will use the information provided by the user to identify new search paths"
