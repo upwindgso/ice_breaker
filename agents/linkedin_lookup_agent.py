@@ -1,4 +1,9 @@
+import sys
 import os
+
+# Add the project root directory to the system path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
@@ -15,7 +20,7 @@ from langchain.agents import (
 )
 from langchain import hub
 
-from tools.tools import get_profile_url_tavily_pref_li
+from tools.tools import get_profile_url_tavily, get_profile_url_searxng
 
 from langchain_community.tools import HumanInputRun
 
@@ -26,7 +31,7 @@ def lookup(name: str) -> str:
 
     template = """Given the full name {name_of_person} I want you to get me a link to their LinkedIn profile page.
                     Your answer should contain only a valid linkedin profile url containing 'linkedin.com/in/'.
-                    Because you are searching for linkedin profiles, you will send to append your initial searches with the word 'linkedin' to help limit relevant results.
+                    Because you are searching for linkedin profiles, you will send to append your initial searches with the domain 'site:linkedin.com/in/' to help limit relevant results.
                     You will never repeat the same google query because it is wasteful.
     """
 
@@ -38,7 +43,8 @@ def lookup(name: str) -> str:
     tools_for_agent = [
         Tool(
             name="Crawl Google for linkedin profile page",
-            func=get_profile_url_tavily_pref_li,
+            #func=get_profile_url_tavily,
+            func=get_profile_url_searxng,
             description="useful for when you need to get the linkein page URL"
         )
         ,HumanInputRun(
@@ -59,7 +65,7 @@ def lookup(name: str) -> str:
                                    tools=tools_for_agent, 
                                    verbose=True,
                                    handle_parsing_errors=True,
-                                   max_iterations=5  # Limit iterations to prevent infinite loops
+                                   max_iterations=10  # Limit iterations to prevent infinite loops
                                    ) #the runtime that contains all the loops etc => the orchestration
 
     if name != None: 
@@ -77,4 +83,4 @@ def lookup(name: str) -> str:
 
 if __name__ == "__main__":
     profile_url = lookup("Tim Jones UPwind Future Foods")#lookup(os.getenv("MY_NAME_TO_SEARCH"))
-    print(profile_url)
+    print(profile_url) 

@@ -35,7 +35,7 @@ def scrape_linkedin_profile(linkedin_profile_url: str, mock: bool = True):
         k: v
         for k, v in data.items()
         if v not in ([], "", "", None)
-        and k not in ["people_also_viewed", "recommendations"]
+        and k not in ["people_also_viewed", "recommendations","similarly_named_profiles"]
     }
 
     if data.get("groups"):
