@@ -1,39 +1,22 @@
 
-from langchain_community.tools.tavily_search import TavilySearchResults
-
-
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-model_path = r"C:\GitHub\bge-reranker-v2-m3"
-
-from FlagEmbedding import FlagReranker
+import requests
 
 def rerank_results(query, passages):
-    pairs = [[query, passage] for passage in passages]
-    
-    reranker = FlagReranker(model_path, normalize=True)
+    """Reranks the results based on relevance to the name."""
+    response = requests.post(
+        "http://localhost:8000/rerank",
+        json={"query": query, "passages": passages}
+    )
+    return response.json()["response"]
 
-    score = reranker.compute_score(pairs)
-    
-    return score
-""""
-if __name__ == "__main__":
-    query = "What is the capital of France?"
-    passages = [
-        "Paris is the capital of France.",
-        "London is the capital of England.",
-        "Berlin is the capital of Germany."
-    ]
-    scores = rerank_results(query, passages)
-    print(scores)
-"""
+
+from langchain_community.tools.tavily_search import TavilySearchResults
 
 def get_profile_url_tavily(name : str):
     """Searches for Linkedin or Twitter Profile page"""
     
     search = TavilySearchResults(
-        max_results=10,
+        max_results=20,
         search_depth="basic",
         #include_domains=["linkedin.com/in/"],
         exclude_domains=["rocketreach.co"],
@@ -58,10 +41,11 @@ def get_profile_url_searxng(name : str):
         )
     
     # Extract snippets for reranking
-    snippets = [item['snippet'] for item in res]
+    content = [f"{item.get('title', '')} - {item.get('snippet', '')}" for item in res]
+
 
     # Get reranking scores
-    scores = rerank_results(name, snippets)
+    scores = rerank_results(name, content)
 
     # Add scores back to original results
     for item, score in zip(res, scores):

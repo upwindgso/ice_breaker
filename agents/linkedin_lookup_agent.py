@@ -25,19 +25,20 @@ from tools.tools import get_profile_url_tavily, get_profile_url_searxng
 from langchain_community.tools import HumanInputRun
 
 
-def lookup(name: str) -> str:
+def lookup(name: str, keywords: str) -> str:
     llm = ChatOpenAI(temperature=0,model="gpt-4o-mini")
     #llm = ChatOllama(temperature=0, model="llama3.2_32k")
 
-    template = """Given the full name {name_of_person} I want you to get me a link to their LinkedIn profile page.
+    template = """Given the fullname <{name_of_person}> and keywords <{keywords}>,  I want you to get me a link to their LinkedIn profile page.
                     Your answer should contain only a valid linkedin profile url containing 'linkedin.com/in/'.
                     Because you are searching for linkedin profiles, you will send to append your initial searches with the domain 'site:linkedin.com/in/' to help limit relevant results.
-                    You will never repeat the same google query because it is wasteful.
-                    You make use of the rerank_score information to help sort relevance.
+                    You will never repeat the same search query because it is wasteful and unnessesary.
+                    You make use of the rerank_score information to help sort relevance but still excercise your own judgement and validation. For instance, if several results have a high but similar score, you will not blindly choose the highest score but perform validation yourself.
+                    Before answering you will ensure that the 'link' you have selected from the json corresponds the the profile that you intended to select; sometimes you can default to chosing the first link as your final answer when you intended another one from your validation.
     """
 
     prompt_template = PromptTemplate(
-        template=template, input_variables=["name_of_person"]
+        template=template, input_variables=["name_of_person", "keywords"]
 
     )
 
@@ -48,9 +49,9 @@ def lookup(name: str) -> str:
             func=get_profile_url_searxng,
             description="useful for when you need to get the linkein page URL. The reranking_score gives an expert opinion on relevance of the search result."
         )
-        ,HumanInputRun(
-        description="Useful when you need to ask a human for help or verification. The input should be a question for the human including what you know and where you are stuck. You will use the information provided by the user to identify new search paths"
-    )
+        #,HumanInputRun(
+        #description="Useful when you need to ask a human for help or verification. The input should be a question for the human including what you know and where you are stuck. You will use the information provided by the user to identify new search paths"
+        #)
         
     ]
 
@@ -71,7 +72,7 @@ def lookup(name: str) -> str:
 
     if name != None: 
         result = agent_executor.invoke(
-            input={"input": prompt_template.format_prompt(name_of_person=name)}
+            input={"input": prompt_template.format_prompt(name_of_person=name, keywords=keywords)}
         )
     else:
         return {"error": "No name supplied"}
@@ -83,5 +84,5 @@ def lookup(name: str) -> str:
 
 
 if __name__ == "__main__":
-    profile_url = lookup("Tim Jones UPwind Future Foods")#lookup(os.getenv("MY_NAME_TO_SEARCH"))
+    profile_url = lookup("Tim Jones","Upwind")#lookup(os.getenv("MY_NAME_TO_SEARCH"))
     print(profile_url) 
