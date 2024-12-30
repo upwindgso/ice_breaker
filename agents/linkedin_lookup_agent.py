@@ -6,10 +6,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain_community.chat_models import ChatOllama
 
 
 load_dotenv()
+
+os.environ["LANGCHAIN_TRACING_V2"] = "false"
 
 from langchain_community.chat_models import ChatOllama
 from langchain_core.prompts import PromptTemplate
@@ -25,11 +28,12 @@ from tools.tools import get_profile_url_tavily, get_profile_url_searxng
 from langchain_community.tools import HumanInputRun
 
 
-def lookup(name: str, keywords: str) -> str:
-    llm = ChatOpenAI(temperature=0,model="gpt-4o-mini")
-    #llm = ChatOllama(temperature=0, model="llama3.2_32k")
+def lookup(name: str, location: str = "", keywords: str = "") -> str:
+    llm = ChatAnthropic(temperature=0.1, model='claude-3-5-haiku-latest')
+    #llm = ChatOpenAI(temperature=0.1,model="gpt-4o-mini")
+    #llm = ChatOllama(temperature=0.1, model="llama3.2_32k")
 
-    template = """Given the fullname <{name_of_person}> and keywords <{keywords}>,  I want you to get me a link to their LinkedIn profile page.
+    template = """Given the fullname <{name_of_person}> living in <{location}>and keywords <{keywords}>,  I want you to get me a link to their LinkedIn profile page.
                     Your answer should contain only a valid linkedin profile url containing 'linkedin.com/in/'.
                     Because you are searching for linkedin profiles, you will send to append your initial searches with the domain 'site:linkedin.com/in/' to help limit relevant results.
                     You will never repeat the same search query because it is wasteful and unnessesary.
@@ -38,7 +42,7 @@ def lookup(name: str, keywords: str) -> str:
     """
 
     prompt_template = PromptTemplate(
-        template=template, input_variables=["name_of_person", "keywords"]
+        template=template, input_variables=["name_of_person", "location","keywords"]
 
     )
 
@@ -72,7 +76,7 @@ def lookup(name: str, keywords: str) -> str:
 
     if name != None: 
         result = agent_executor.invoke(
-            input={"input": prompt_template.format_prompt(name_of_person=name, keywords=keywords)}
+            input={"input": prompt_template.format_prompt(name_of_person=name, location=location, keywords=keywords)}
         )
     else:
         return {"error": "No name supplied"}
@@ -84,5 +88,5 @@ def lookup(name: str, keywords: str) -> str:
 
 
 if __name__ == "__main__":
-    profile_url = lookup("Tim Jones","Upwind")#lookup(os.getenv("MY_NAME_TO_SEARCH"))
+    profile_url = lookup("Cheryl Chen","Melbourne","Upwind")#lookup(os.getenv("MY_NAME_TO_SEARCH"))
     print(profile_url) 

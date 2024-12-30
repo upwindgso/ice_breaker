@@ -28,7 +28,7 @@ def get_profile_url_tavily(name : str):
 
 from langchain_community.utilities import SearxSearchWrapper
 
-def get_profile_url_searxng(name : str):
+def get_profile_url_searxng(name : str, location: str = "", keywords: str = ""):
     """Searches for Linkedin or Twitter Profile page"""
 
     search = SearxSearchWrapper(
@@ -43,9 +43,15 @@ def get_profile_url_searxng(name : str):
     # Extract snippets for reranking
     content = [f"{item.get('title', '')} - {item.get('snippet', '')}" for item in res]
 
-
+    query = str(
+            {"name" : name,
+             "location" : location,
+             "keywords" : keywords
+             }
+    )
+    
     # Get reranking scores
-    scores = rerank_results(name, content)
+    scores = rerank_results(query, content)
 
     # Add scores back to original results
     for item, score in zip(res, scores):
